@@ -244,6 +244,7 @@ declare_pointers!(PlayerDataPointers {
     health: UnityPointer<3> = pdp("health"),
     max_health_base: UnityPointer<3> = pdp("maxHealthBase"),
     heart_pieces: UnityPointer<3> = pdp("heartPieces"),
+    encountered_moss_mother: UnityPointer<3> = pdp("encounteredMossMother"),
     defeated_moss_mother: UnityPointer<3> = pdp("defeatedMossMother"),
     has_needle_throw: UnityPointer<3> = pdp("hasNeedleThrow"),
     has_parry: UnityPointer<3> = pdp("hasParry"),

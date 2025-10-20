@@ -61,6 +61,10 @@ pub enum Split {
     // endregion: Start, End, and Menu
 
     // region: MossLands
+    /// Moss Mother Encountereeed
+    ///
+    /// Splits when encountering Moss Mother
+    MossMotherEncountered,
     /// Moss Mother (Boss)
     ///
     /// Splits when killing Moss Mother
@@ -1888,6 +1892,9 @@ pub fn continuous_splits(
         // endregion: Start, End, and Menu
 
         // region: MossLands
+        Split::MossMotherEncountered => {
+            should_split(mem.deref(&pd.encountered_moss_mother).unwrap_or_default())
+        }
         Split::MossMother => should_split(mem.deref(&pd.defeated_moss_mother).unwrap_or_default()),
         Split::SilkSpear => should_split(mem.deref(&pd.has_needle_throw).unwrap_or_default()),
         Split::BoneBottomSimpleKey => {

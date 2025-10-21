@@ -61,7 +61,7 @@ pub enum Split {
     // endregion: Start, End, and Menu
 
     // region: MossLands
-    /// Moss Mother Encountereeed
+    /// Moss Mother Encountered
     ///
     /// Splits when encountering Moss Mother
     MossMotherEncountered,

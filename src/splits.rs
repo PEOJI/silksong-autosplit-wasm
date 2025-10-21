@@ -1532,9 +1532,6 @@ pub fn transition_splits(
         Split::EnterFarFields => should_split(
             !scenes.old.starts_with("Bone_East") && scenes.current.starts_with("Bone_East"),
         ),
-        Split::SeamstressOfferedQuest => {
-            should_split(mem.deref(&pd.seamstress_offered_quest).unwrap_or_default())
-        }
         Split::DriftersCloakTrans => should_split(mem.deref(&pd.has_brolly).unwrap_or_default()),
         // endregion: FarFields
 
@@ -1920,6 +1917,9 @@ pub fn continuous_splits(
         // endregion: Wormways
 
         // region: FarFields
+        Split::SeamstressOfferedQuest => {
+            should_split(mem.deref(&pd.seamstress_offered_quest).unwrap_or_default())
+        }
         Split::DriftersCloak => should_split(mem.deref(&pd.has_brolly).unwrap_or_default()),
         Split::FourthChorus => should_split(mem.deref(&pd.defeated_song_golem).unwrap_or_default()),
         Split::GurrTheOutcastEncountered => {

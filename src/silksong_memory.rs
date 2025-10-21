@@ -307,6 +307,8 @@ declare_pointers!(PlayerDataPointers {
     encountered_ant_trapper: UnityPointer<3> = pdp("encounteredAntTrapper"),
     defeated_ant_trapper: UnityPointer<3> = pdp("defeatedAntTrapper"),
 
+    quest_pane_has_new: UnityPointer<3> = pdp("QuestPaneHasNew"),
+
     savedflea_ant_03: UnityPointer<3> = pdp("SavedFlea_Ant_03"),
     savedflea_belltown_04: UnityPointer<3> = pdp("SavedFlea_Belltown_04"),
     savedflea_bone_06: UnityPointer<3> = pdp("SavedFlea_Bone_06"),

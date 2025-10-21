@@ -613,6 +613,13 @@ pub enum Split {
     PaleNailsTrans,
     // endregion: TheCradle
 
+    // region: WishSpecific
+    /// Wish Promised
+    ///
+    /// Splits when a wish is promised
+    WishPromised,
+    // endregion: WishSpecific
+
     // region: ThreefoldMelody
     /// Vaultkeepers Melody (Melody)
     ///
@@ -1732,6 +1739,10 @@ pub fn transition_splits(
             should_split(mem.deref(&pd.has_silk_boss_needle).unwrap_or_default())
         }
         // endregion: TheCradle
+
+        // region: WishSpecific
+        Split::WishPromised => should_split(mem.deref(&pd.quest_pane_has_new).unwrap_or_default()),
+        // endregion: WishSpecific
 
         // region: ThreefoldMelody
         Split::VaultkeepersMelodyTrans => {

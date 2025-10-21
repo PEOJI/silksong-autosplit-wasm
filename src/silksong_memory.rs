@@ -257,6 +257,7 @@ declare_pointers!(PlayerDataPointers {
     has_dash: UnityPointer<3> = pdp("hasDash"),
     defeated_lace1: UnityPointer<3> = pdp("defeatedLace1"),
     bell_shrine_wilds: UnityPointer<3> = pdp("bellShrineWilds"),
+    met_seamstress: UnityPointer<3> = pdp("metSeamstress"),
     has_brolly: UnityPointer<3> = pdp("hasBrolly"),
     defeated_song_golem: UnityPointer<3> = pdp("defeatedSongGolem"),
     bell_shrine_greymoor: UnityPointer<3> = pdp("bellShrineGreymoor"),

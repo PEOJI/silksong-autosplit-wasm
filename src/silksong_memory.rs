@@ -245,6 +245,7 @@ declare_pointers!(PlayerDataPointers {
     max_health_base: UnityPointer<3> = pdp("maxHealthBase"),
     heart_pieces: UnityPointer<3> = pdp("heartPieces"),
     defeated_moss_mother: UnityPointer<3> = pdp("defeatedMossMother"),
+    promised_first_wish: UnityPointer<3> = pdp("FirstWishPromised"),
     has_needle_throw: UnityPointer<3> = pdp("hasNeedleThrow"),
     has_parry: UnityPointer<3> = pdp("hasParry"),
     has_thread_sphere: UnityPointer<3> = pdp("hasThreadSphere"),
@@ -306,8 +307,6 @@ declare_pointers!(PlayerDataPointers {
     defeated_first_weaver: UnityPointer<3> = pdp("defeatedFirstWeaver"),
     encountered_ant_trapper: UnityPointer<3> = pdp("encounteredAntTrapper"),
     defeated_ant_trapper: UnityPointer<3> = pdp("defeatedAntTrapper"),
-
-    quest_pane_has_new: UnityPointer<3> = pdp("QuestPaneHasNew"),
 
     savedflea_ant_03: UnityPointer<3> = pdp("SavedFlea_Ant_03"),
     savedflea_belltown_04: UnityPointer<3> = pdp("SavedFlea_Belltown_04"),

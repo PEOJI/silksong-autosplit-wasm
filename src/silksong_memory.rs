@@ -278,6 +278,7 @@ declare_pointers!(PlayerDataPointers {
     defeated_trobbio: UnityPointer<3> = pdp("defeatedTrobbio"),
     has_harpoon_dash: UnityPointer<3> = pdp("hasHarpoonDash"),
     hang04_battle: UnityPointer<3> = pdp("hang04Battle"),
+    encountered_lace_tower: UnityPointer<3> = pdp("encounteredLaceTower"),
     defeated_lace_tower: UnityPointer<3> = pdp("defeatedLaceTower"),
     has_melody_librarian: UnityPointer<3> = pdp("HasMelodyLibrarian"),
     has_melody_conductor: UnityPointer<3> = pdp("HasMelodyConductor"),

@@ -261,6 +261,10 @@ pub enum Split {
     ///
     /// Splits when entering Bellhart
     EnterBellhart,
+    /// Widow Encountered(Boss)
+    ///
+    /// Splits when starting Widow fight the first time
+    WidowEncountered,
     /// Widow (Boss)
     ///
     /// Splits when killing Widow
@@ -1948,6 +1952,7 @@ pub fn continuous_splits(
         // endregion: Shellwood
 
         // region: Bellhart
+        Split::WidowEncountered => should_split(mem.deref(&pd.spinner_encountered).unwrap_or_default()),
         Split::Widow => should_split(mem.deref(&pd.spinner_defeated).unwrap_or_default()),
         Split::BellhartBell => {
             should_split(mem.deref(&pd.bell_shrine_bellhart).unwrap_or_default())

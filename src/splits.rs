@@ -497,6 +497,10 @@ pub enum Split {
     // endregion: WhisperingVaults
 
     // region: ChoralChambers
+    /// Met Lace Citadel
+    /// 
+    /// Splits when encountering Lace in Choral Chambers
+    MetLaceCitadel,
     /// Enter Songclave (Transition)
     ///
     /// Splits when entering Songclave
@@ -2033,6 +2037,7 @@ pub fn continuous_splits(
         // endregion: WhisperingVaults
 
         // region: ChoralChambers
+        Split::MetLaceCitadel => should_split(mem.deref(&pd.lace_meet_citadel).unwrap_or_default()),
         Split::MetMergwin => should_split(mem.deref(&pd.met_gourmand_servant).unwrap_or_default()),
         Split::GivenCouriersRasher => {
             should_split(mem.deref(&pd.gourmand_given_meat).unwrap_or_default())

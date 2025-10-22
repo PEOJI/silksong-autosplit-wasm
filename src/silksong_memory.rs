@@ -255,6 +255,7 @@ declare_pointers!(PlayerDataPointers {
     defeated_bell_beast: UnityPointer<3> = pdp("defeatedBellBeast"),
     bell_shrine_bone_forest: UnityPointer<3> = pdp("bellShrineBoneForest"),
     has_dash: UnityPointer<3> = pdp("hasDash"),
+    encountered_lace1: UnityPointer<3> = pdp("encounteredLace1"),
     defeated_lace1: UnityPointer<3> = pdp("defeatedLace1"),
     bell_shrine_wilds: UnityPointer<3> = pdp("bellShrineWilds"),
     has_brolly: UnityPointer<3> = pdp("hasBrolly"),

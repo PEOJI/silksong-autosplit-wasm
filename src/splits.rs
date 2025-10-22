@@ -119,6 +119,10 @@ pub enum Split {
     ///
     /// Splits on the transition after obtaining Swift Step (Dash/Sprint)
     SwiftStepTrans,
+    /// Encountered Lace 1 (Boss)
+    ///
+    /// Splits when starting Lace 1 fight
+    EncounteredLace1,
     /// Lace 1 (Boss)
     ///
     /// Splits when defeating Lace 1 in DeepDocks
@@ -1904,6 +1908,7 @@ pub fn continuous_splits(
 
         // region: DeepDocks
         Split::SwiftStep => should_split(mem.deref(&pd.has_dash).unwrap_or_default()),
+        Split::EncounteredLace1 => should_split(mem.deref(&pd.encountered_lace1).unwrap_or_default()),
         Split::Lace1 => should_split(mem.deref(&pd.defeated_lace1).unwrap_or_default()),
         Split::DeepDocksBell => should_split(mem.deref(&pd.bell_shrine_wilds).unwrap_or_default()),
         // endregion: DeepDocks

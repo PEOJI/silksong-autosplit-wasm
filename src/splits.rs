@@ -265,6 +265,10 @@ pub enum Split {
     ///
     /// Splits when killing Widow
     Widow,
+    /// Needolin (Skill)
+    /// 
+    /// Splits when obtaining Needolin
+    Needolin,
     /// Bellhart Bell (Event)
     ///
     /// Splits when ringing the Bellhart Bell Shrine
@@ -1949,6 +1953,7 @@ pub fn continuous_splits(
 
         // region: Bellhart
         Split::Widow => should_split(mem.deref(&pd.spinner_defeated).unwrap_or_default()),
+        Split::Needolin => should_split(mem.deref(&pd.has_needolin).unwrap_or_default()),
         Split::BellhartBell => {
             should_split(mem.deref(&pd.bell_shrine_bellhart).unwrap_or_default())
         }

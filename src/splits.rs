@@ -153,6 +153,10 @@ pub enum Split {
     // endregion: Wormways
 
     // region: HuntersMarch
+    /// Visit Hunter's March
+    ///
+    /// Splits on entering any room in the Hunter's March area
+    VisitHuntersMarch,
     /// Enter Hunter's March (Transition)
     ///
     /// Splits on entering a Hunter's March transition with area text
@@ -1912,6 +1916,11 @@ pub fn continuous_splits(
         Split::Sharpdart => should_split(mem.deref(&pd.has_silk_charge).unwrap_or_default()),
         // endregion: Wormways
 
+        // region: HuntersMarch
+        Split::VisitHuntersMarch => {
+            should_split(mem.deref(&pd.visited_hunters_trail).unwrap_or_default())
+        }
+        // endregion: HuntersMarch
         // region: FarFields
         Split::DriftersCloak => should_split(mem.deref(&pd.has_brolly).unwrap_or_default()),
         Split::FourthChorus => should_split(mem.deref(&pd.defeated_song_golem).unwrap_or_default()),

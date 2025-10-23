@@ -1575,7 +1575,7 @@ pub fn transition_splits(
             !scenes.old.starts_with("Shellwood") && scenes.current.starts_with("Shellwood"),
         ),
         Split::ExitShellwoodArena => should_split(
-            scenes.old == "Shellwood_01b" && scenes.current == "Shellwood_01",
+            scenes.old == "Shellwood_01b" && scenes.current == "Shellwood_02",
         ),
         // endregion: Shellwood
 

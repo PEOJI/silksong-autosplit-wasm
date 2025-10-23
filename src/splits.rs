@@ -153,6 +153,10 @@ pub enum Split {
     // endregion: Wormways
 
     // region: HuntersMarch
+    /// Enter Any Hunter's March (Transition)
+    ///
+    /// Splits on entering any room in the Hunter's March area from outside Hunter's March
+    EnterAnyHuntersMarch,
     /// Enter Hunter's March (Transition)
     ///
     /// Splits on entering a Hunter's March transition with area text
@@ -1515,6 +1519,12 @@ pub fn transition_splits(
         // endregion: Wormways
 
         // region: HuntersMarch
+        Split::EnterAnyHuntersMarch => {
+            should_split((scenes.old == "Bone_08" && scenes.current == "Ant_02") || 
+            (scenes.old == "Bone_East_04" && scenes.current == "Ant_05b") || 
+            (scenes.old == "Bone_East_04b" && scenes.current == "Ant_05b") || 
+            (scenes.old == "Bone_East_11" && scenes.current == "Ant_05c"))
+        },
         Split::EnterHuntersMarch => should_split(
             (scenes.old == "Ant_02" && scenes.current == "Ant_03")
                 || (scenes.old == "Ant_05b" && scenes.current == "Ant_14"),

@@ -926,6 +926,13 @@ pub enum Split {
     SylphsongTrans,
     // endregion: Crests
 
+    // region: SilkHearts
+    /// First Silk Heart (Event)
+    ///
+    /// Splits when seeing a silk heart for the first time
+    FirstSilkHeart,
+    // endregion: SilkHearts
+
     // region: FleaSpecific
     /// Rescued Flea Hunter's March (Flea)
     ///
@@ -2211,6 +2218,12 @@ pub fn continuous_splits(
             should_split(mem.deref(&pd.has_bound_crest_upgrader).unwrap_or_default())
         }
         // endregion: Crests
+
+        // region: SilkHearts
+        Split::FirstSilkHeart => {
+            should_split(mem.deref(&pd.has_seen_silk_hearts).unwrap_or_default())
+        }
+        // endregion: SilkHearts
 
         // region: FleaSpecific
         Split::SavedFleaHuntersMarch => {

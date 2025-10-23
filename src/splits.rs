@@ -242,6 +242,10 @@ pub enum Split {
     ///
     /// Splits when entering Shellwood
     EnterShellwood,
+    /// Exit Shellwood Arena (Transition)
+    /// 
+    /// Splits when leaving the Shellwood Arena room
+    ExitShellwoodArena,
     /// Cling Grip (Skill)
     ///
     /// Splits when obtaining Cling Grip (Wall Jump)
@@ -1569,6 +1573,9 @@ pub fn transition_splits(
         Split::ClingGripTrans => should_split(mem.deref(&pd.has_wall_jump).unwrap_or_default()),
         Split::EnterShellwood => should_split(
             !scenes.old.starts_with("Shellwood") && scenes.current.starts_with("Shellwood"),
+        ),
+        Split::ExitShellwoodArena => should_split(
+            scenes.old == "Shellwood_01b" && scenes.current == "Shellwood_01",
         ),
         // endregion: Shellwood
 

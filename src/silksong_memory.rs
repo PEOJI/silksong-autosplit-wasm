@@ -297,6 +297,7 @@ declare_pointers!(PlayerDataPointers {
     has_bound_crest_upgrader: UnityPointer<3> = pdp("HasBoundCrestUpgrader"),
     tool_pouch_upgrades: UnityPointer<3> = pdp("ToolPouchUpgrades"),
     tool_kit_upgrades: UnityPointer<3> = pdp("ToolKitUpgrades"),
+    is_next_silk_regen_upgraded: UnityPointer<3> = pdp("isNextSilkRegenUpgraded"),
 
     defeated_wisp_pyre_effigy: UnityPointer<3> =  pdp("defeatedWispPyreEffigy"),
     has_slab_key_a: UnityPointer<3> =  pdp("HasSlabKeyA"),

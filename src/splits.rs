@@ -1519,6 +1519,9 @@ pub fn transition_splits(
         // endregion: Wormways
 
         // region: HuntersMarch
+        Split::VisitHuntersMarch => {
+            should_split(mem.deref(&pd.visited_hunters_trail).unwrap_or_default())
+        }
         Split::EnterHuntersMarch => should_split(
             (scenes.old == "Ant_02" && scenes.current == "Ant_03")
                 || (scenes.old == "Ant_05b" && scenes.current == "Ant_14"),
@@ -1916,11 +1919,6 @@ pub fn continuous_splits(
         Split::Sharpdart => should_split(mem.deref(&pd.has_silk_charge).unwrap_or_default()),
         // endregion: Wormways
 
-        // region: HuntersMarch
-        Split::VisitHuntersMarch => {
-            should_split(mem.deref(&pd.visited_hunters_trail).unwrap_or_default())
-        }
-        // endregion: HuntersMarch
         // region: FarFields
         Split::DriftersCloak => should_split(mem.deref(&pd.has_brolly).unwrap_or_default()),
         Split::FourthChorus => should_split(mem.deref(&pd.defeated_song_golem).unwrap_or_default()),

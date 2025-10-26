@@ -670,6 +670,10 @@ pub enum Split {
     ///
     /// Splits when the first wish is promised (after moss mother)
     FirstWishPromised,
+    /// New Wish Promised
+    ///
+    /// Splits when the wishes page updates
+    NewWishPromised,
     // endregion: WishSpecific
 
     // region: ThreefoldMelody
@@ -1968,7 +1972,8 @@ pub fn continuous_splits(
         // endregion: Start, End, and Menu
 
         // region: wishSpecific
-        Split::FirstWishPromised => should_split(mem.deref(&pd.quest_pane_has_new).unwrap_or_default()),
+        Split::FirstWishPromised => should_split(mem.deref(&pd.promised_first_wish).unwrap_or_default()),
+        Split::NewWishPromised => should_split(mem.deref(&pd.quest_pane_has_new).unwrap_or_default()),
         // endregion: WishSpecific
 
         // region: MossLands

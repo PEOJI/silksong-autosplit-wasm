@@ -265,6 +265,7 @@ declare_pointers!(PlayerDataPointers {
     encountered_vampire_gnat_boss: UnityPointer<3> = pdp("encounteredVampireGnatBoss"),
     defeated_vampire_gnat_boss: UnityPointer<3> = pdp("defeatedVampireGnatBoss"),
     has_wall_jump: UnityPointer<3> = pdp("hasWalljump"),
+    spinner_encountered: UnityPointer<3> = pdp("encounteredSpinner")
     spinner_defeated: UnityPointer<3> = pdp("spinnerDefeated"),
     bell_shrine_bellhart: UnityPointer<3> = pdp("bellShrineBellhart"),
     bell_shrine_shellwood: UnityPointer<3> = pdp("bellShrineShellwood"),

@@ -193,6 +193,10 @@ pub enum Split {
     ///
     /// Splits when entering Far Fields
     EnterFarFields,
+    /// Met Seamstress (NPC)
+    ///
+    /// Splits when meeting the Seamstress for the Drifter's Cloak
+    MetSeamstress,
     /// Drifter's Cloak (Skill)
     ///
     /// Splits when obtaining Drifter's Cloak (Umbrella/Float)
@@ -2019,6 +2023,7 @@ pub fn continuous_splits(
 
         // region: FarFields
         Split::DriftersCloak => should_split(mem.deref(&pd.has_brolly).unwrap_or_default()),
+        Split::MetSeamstress => should_split(mem.deref(&pd.met_seamstress).unwrap_or_default()),
         Split::FourthChorus => should_split(mem.deref(&pd.defeated_song_golem).unwrap_or_default()),
         Split::GurrTheOutcastEncountered => {
             should_split(mem.deref(&pd.encountered_ant_trapper).unwrap_or_default())

@@ -197,6 +197,10 @@ pub enum Split {
     ///
     /// Splits when meeting the Seamstress for the Drifter's Cloak
     MetSeamstress,
+    /// Seamstress Quest
+    ///
+    /// Splits when Seamstress offers the Flexile Spines quest
+    SeamstressOfferedQuest,
     /// Drifter's Cloak (Skill)
     ///
     /// Splits when obtaining Drifter's Cloak (Umbrella/Float)
@@ -2030,6 +2034,9 @@ pub fn continuous_splits(
         // endregion: Wormways
 
         // region: FarFields
+        Split::SeamstressOfferedQuest => {
+            should_split(mem.deref(&pd.seamstress_offered_quest).unwrap_or_default())
+        }
         Split::DriftersCloak => should_split(mem.deref(&pd.has_brolly).unwrap_or_default()),
         Split::MetSeamstress => should_split(mem.deref(&pd.met_seamstress).unwrap_or_default()),
         Split::FourthChorus => should_split(mem.deref(&pd.defeated_song_golem).unwrap_or_default()),

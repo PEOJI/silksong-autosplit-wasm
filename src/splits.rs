@@ -1575,7 +1575,7 @@ pub fn transition_splits(
             should_split(scenes.old != "Bonetown" && scenes.current == "Bonetown")
         }
         Split::EnterMarrow => {
-            should_split(scenes.old != "Bonetown" && scenes.current == "Bone_01")
+            should_split(scenes.old == "Bonetown" && scenes.current == "Bone_01")
         }
         Split::EnterMosshome => {
             should_split(scenes.old == "Bone_05" && scenes.current == "Mosstown_01")

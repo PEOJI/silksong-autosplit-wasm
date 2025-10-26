@@ -220,6 +220,10 @@ pub enum Split {
     ///
     /// Splits when ringing the Greymoor Bell Shrine
     GreymoorBell,
+    /// Encountered Moorwing (Boss)
+    ///
+    /// Splits when starting Moorwing fight the first time
+    MoorwingEncountered,
     /// Moorwing (Boss)
     ///
     /// Splits when killing Moorwing
@@ -1982,10 +1986,8 @@ pub fn continuous_splits(
         Split::GreymoorBell => {
             should_split(mem.deref(&pd.bell_shrine_greymoor).unwrap_or_default())
         }
-        Split::Moorwing => should_split(
-            mem.deref(&pd.defeated_vampire_gnat_boss)
-                .unwrap_or_default(),
-        ),
+        Split::MoorwingEncountered => should_split(mem.deref(&pd.encountered_vampire_gnat_boss).unwrap_or_default()),
+        Split::Moorwing => should_split(mem.deref(&pd.defeated_vampire_gnat_boss).unwrap_or_default()),
         Split::ThreadStorm => should_split(mem.deref(&pd.has_thread_sphere).unwrap_or_default()),
         // endregion: Greymoor
 

@@ -252,6 +252,7 @@ declare_pointers!(PlayerDataPointers {
     has_silk_bomb: UnityPointer<3> = pdp("hasSilkBomb"),
     has_silk_boss_needle: UnityPointer<3> = pdp("hasSilkBossNeedle"),
     has_bonebottom_simple_key: UnityPointer<3> = pdp("PurchasedBonebottomFaithToken"),
+    encountered_bell_beast: UnityPointer<3> = pdp("encounteredBellBeast"),
     defeated_bell_beast: UnityPointer<3> = pdp("defeatedBellBeast"),
     bell_shrine_bone_forest: UnityPointer<3> = pdp("bellShrineBoneForest"),
     has_dash: UnityPointer<3> = pdp("hasDash"),

@@ -100,6 +100,10 @@ pub enum Split {
     // endregion: MossLands
 
     // region: Marrow
+    /// Encountered Bell Beast
+    /// 
+    /// Splits when starting the Bell Beast fight
+    EncounteredBellBeast,
     /// Bell Beast (Boss)
     ///
     /// Splits when defeating the Bell Beast
@@ -1926,6 +1930,7 @@ pub fn continuous_splits(
         // endregion: MossLands
 
         // region: Marrow
+        Split::EncounteredBellBeast => should_split(mem.deref(&pd.encountered_bell_beast).unwrap_or_default()),
         Split::BellBeast => should_split(mem.deref(&pd.defeated_bell_beast).unwrap_or_default()),
         Split::MarrowBell => {
             should_split(mem.deref(&pd.bell_shrine_bone_forest).unwrap_or_default())

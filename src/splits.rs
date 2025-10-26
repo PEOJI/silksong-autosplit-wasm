@@ -1010,6 +1010,10 @@ pub enum Split {
     /// 
     /// Splits when the next silk heart is obtained
     NextSilkHeart,
+    /// First Silk Heart (Event)
+    ///
+    /// Splits when seeing a silk heart for the first time
+    FirstSilkHeart,
     // endregion: SilkHearts
 
     // region: FleaSpecific
@@ -2333,6 +2337,9 @@ pub fn continuous_splits(
 
         // region: SilkHearts
         Split::NextSilkHeart => should_split(mem.deref(&pd.is_next_silk_regen_upgraded).unwrap_or_default()),
+        Split::FirstSilkHeart => {
+            should_split(mem.deref(&pd.has_seen_silk_hearts).unwrap_or_default())
+        }
         // endregion: SilkHearts
 
         // region: FleaSpecific

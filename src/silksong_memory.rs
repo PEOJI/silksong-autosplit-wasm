@@ -271,6 +271,7 @@ declare_pointers!(PlayerDataPointers {
     has_wall_jump: UnityPointer<3> = pdp("hasWalljump"),
     spinner_encountered: UnityPointer<3> = pdp("encounteredSpinner"),
     spinner_defeated: UnityPointer<3> = pdp("spinnerDefeated"),
+    has_needolin: UnityPointer<3> = pdp("hasNeedolin"),
     bell_shrine_bellhart: UnityPointer<3> = pdp("bellShrineBellhart"),
     bell_shrine_shellwood: UnityPointer<3> = pdp("bellShrineShellwood"),
     encountered_last_judge: UnityPointer<3> = pdp("encounteredLastJudge"),

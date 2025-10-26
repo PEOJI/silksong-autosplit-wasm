@@ -77,6 +77,10 @@ pub enum Split {
     ///
     /// Splits when entering Mosshome (Mosstown_01)
     EnterMosshome,
+    /// Enter Marrow (Transition)
+    ///
+    /// Splits when entering Marrow
+    EnterMarrow,
     /// Silk Spear (Skill)
     ///
     /// Splits when obtaining Silk Spear
@@ -1499,6 +1503,9 @@ pub fn transition_splits(
         Split::SilkSpearTrans => should_split(mem.deref(&pd.has_needle_throw).unwrap_or_default()),
         Split::EnterBoneBottom => {
             should_split(scenes.old != "Bonetown" && scenes.current == "Bonetown")
+        }
+        Split::EnterMarrow => {
+            should_split(scenes.old != "Bonetown" && scenes.current == "Bone_01")
         }
         Split::EnterMosshome => {
             should_split(scenes.old == "Bone_05" && scenes.current == "Mosstown_01")

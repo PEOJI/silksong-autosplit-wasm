@@ -106,7 +106,7 @@ pub enum Split {
     // region: Marrow
     /// Encountered Bell Beast
     /// 
-    /// Splits when starting the Bell Beast fight
+    /// Splits when starting the Bell Beast fight for the first time
     BellBeastEncountered,
     /// Bell Beast (Boss)
     ///
@@ -137,7 +137,7 @@ pub enum Split {
     SwiftStepTrans,
     /// Encountered Lace 1 (Boss)
     ///
-    /// Splits when starting Lace 1 fight
+    /// Splits when starting Lace 1 fight for the first time
     Lace1Encountered,
     /// Lace 1 (Boss)
     ///

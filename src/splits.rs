@@ -643,6 +643,10 @@ pub enum Split {
     // endregion: PutrifiedDucts
 
     // region: TheCradle
+    /// Encountered Lace 2 (Boss)
+    /// 
+    /// Splits when Lace 2 boss fight starts for the first time
+    EncounteredLace2,
     /// Lace 2 (Boss)
     ///
     /// Splits when defeating Lace 2 in TheCradle
@@ -2144,6 +2148,7 @@ pub fn continuous_splits(
 
         // region: TheCradle
         Split::GrandmotherSilkEncountered => should_split(mem.deref(&pd.encountered_silk).unwrap_or_default()),
+        Split::EncounteredLace2 => should_split(mem.deref(&pd.encountered_lace_tower).unwrap_or_default()),
         Split::Lace2 => should_split(mem.deref(&pd.defeated_lace_tower).unwrap_or_default()),
         Split::PaleNails => should_split(mem.deref(&pd.has_silk_boss_needle).unwrap_or_default()),
         // endregion: TheCradle

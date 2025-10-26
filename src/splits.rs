@@ -1682,7 +1682,7 @@ pub fn transition_splits(
         Split::EnterCogworkDancers => should_split(
             (scenes.old == "Hang_07" || scenes.old == "Song_25") && scenes.current == "Cog_Dancers",
         ),
-        Split::EnterCog08 => should_split((scenes.old == "Cog_Dancers" && scenes.current == "Cog_08")),
+        Split::EnterCog08 => should_split(scenes.old == "Cog_Dancers" && scenes.current == "Cog_08"),
         // endregion: CogworkCore
 
         // region: WhisperingVaults

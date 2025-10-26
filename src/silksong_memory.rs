@@ -246,6 +246,7 @@ declare_pointers!(PlayerDataPointers {
     heart_pieces: UnityPointer<3> = pdp("heartPieces"),
     defeated_moss_mother: UnityPointer<3> = pdp("defeatedMossMother"),
     quest_pane_has_new: UnityPointer<3> = pdp("QuestPaneHasNew"),
+    promised_first_wish: UnityPointer<3> = pdp("promisedFirstWish"),
     has_needle_throw: UnityPointer<3> = pdp("hasNeedleThrow"),
     has_parry: UnityPointer<3> = pdp("hasParry"),
     has_thread_sphere: UnityPointer<3> = pdp("hasThreadSphere"),

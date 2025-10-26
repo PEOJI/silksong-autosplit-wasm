@@ -541,6 +541,10 @@ pub enum Split {
     ///
     /// Splits when entering Songclave
     EnterSongclave,
+    /// Trobbio Encountered (Boss)
+    /// 
+    /// Splits when first encountering the Trobbio boss
+    TrobbioEncountered,
     /// Trobbio (Boss)
     ///
     /// Splits when killing Trobbio
@@ -2105,6 +2109,7 @@ pub fn continuous_splits(
         Split::GivenCouriersRasher => {
             should_split(mem.deref(&pd.gourmand_given_meat).unwrap_or_default())
         }
+        Split::TrobbioEncountered => should_split(mem.deref(&pd.encountered_trobbio).unwrap_or_default()),
         Split::Trobbio => should_split(mem.deref(&pd.defeated_trobbio).unwrap_or_default()),
         //endregion: ChoralChambers
 

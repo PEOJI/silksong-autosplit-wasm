@@ -119,6 +119,10 @@ pub enum Split {
     // endregion: Marrow
 
     // region: DeepDocks
+    /// Enter Deep Docks (transition)
+    /// 
+    /// Splits when entering a Deep Docks transition with area text
+    EnterDeepDocks,
     /// Swift Step (Skill)
     ///
     /// Splits when obtaining Swift Step (Dash/Sprint)
@@ -1533,6 +1537,10 @@ pub fn transition_splits(
         // endregion: Marrow
 
         // region: DeepDocks
+        Split::EnterDeepDocks => should_split((scenes.old == "Bone_09" && scenes.current =="Dock_08")
+         || (scenes.old == "Dock_01" && scenes.current == "Dock_08")
+         || (scenes.old == "Bone_East_03" && scenes.current =="Bone_East_01")
+         || (scenes.old == "Dock_01" && scenes.current =="Bone_East_01")),
         Split::SwiftStepTrans => should_split(mem.deref(&pd.has_dash).unwrap_or_default()),
         Split::Lace1Trans => should_split(mem.deref(&pd.defeated_lace1).unwrap_or_default()),
         // endregion: DeepDocks

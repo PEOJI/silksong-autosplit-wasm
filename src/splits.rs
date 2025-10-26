@@ -603,6 +603,10 @@ pub enum Split {
     ///
     /// Splits when defeating Lace 2 in TheCradle
     Lace2,
+    /// Grandmother Silk (Boss)
+    /// 
+    /// Splits when encountering Grandmother Silk for the first time
+    GrandmotherSilkEncountered,
     /// Pale Nails (Skill)
     ///
     /// Splits when obtaining Pale Nails
@@ -2070,6 +2074,7 @@ pub fn continuous_splits(
         // endregion: Whiteward
 
         // region: TheCradle
+        Split::GrandmotherSilkEncountered => should_split(mem.deref(&pd.encountered_silk).unwrap_or_default()),
         Split::Lace2 => should_split(mem.deref(&pd.defeated_lace_tower).unwrap_or_default()),
         Split::PaleNails => should_split(mem.deref(&pd.has_silk_boss_needle).unwrap_or_default()),
         // endregion: TheCradle

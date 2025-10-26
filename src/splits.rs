@@ -489,6 +489,10 @@ pub enum Split {
     ///
     /// Splits when entering the rooms where the Whispering Vaults area text appears, past the arena or from Songclave
     EnterWhisperingVaults,
+    /// Whispering Vaults Arena Encountered (Mini Boss)
+    ///
+    /// Splits when first encountering the Whispering Vaults Arena
+    WhisperingVaultsArenaEncountered,
     /// Whispering Vaults Arena (Mini Boss)
     ///
     /// Splits when completing the Whispering Vaults Arena
@@ -2026,6 +2030,7 @@ pub fn continuous_splits(
         // endregion: CogworkCore
 
         // region: WhisperingVaults
+        Split::WhisperingVaultsArenaEncountered => should_split(mem.deref(&pd.encountered_library_entry_battle).unwrap_or_default()),
         Split::WhisperingVaultsArena => should_split(
             mem.deref(&pd.completed_library_entry_battle)
                 .unwrap_or_default(),

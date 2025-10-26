@@ -665,6 +665,13 @@ pub enum Split {
     PaleNailsTrans,
     // endregion: TheCradle
 
+    // region: WishSpecific
+    /// First Wish Promised
+    ///
+    /// Splits when the first wish is promised (after moss mother)
+    WishPromised,
+    // endregion: WishSpecific
+
     // region: ThreefoldMelody
     /// Vaultkeepers Melody (Melody)
     ///
@@ -1959,6 +1966,10 @@ pub fn continuous_splits(
         Split::ManualSplit => SplitterAction::ManualSplit,
         Split::PlayerDeath => should_split(mem.deref(&pd.health).is_ok_and(|h: i32| h == 0)),
         // endregion: Start, End, and Menu
+
+        // region: wishSpecific
+        Split::WishPromised => should_split(mem.deref(&pd.quest_pane_has_new).unwrap_or_default()),
+        // endregion: WishSpecific
 
         // region: MossLands
         Split::MossMother => should_split(mem.deref(&pd.defeated_moss_mother).unwrap_or_default()),

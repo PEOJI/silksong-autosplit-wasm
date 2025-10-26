@@ -274,6 +274,7 @@ declare_pointers!(PlayerDataPointers {
     woke_song_chevalier: UnityPointer<3> = pdp("wokeSongChevalier"),
     encountered_song_chevalier_boss: UnityPointer<3> = pdp("encounteredSongChevalierBoss"),
     defeated_song_chevalier_boss: UnityPointer<3> = pdp("defeatedSongChevalierBoss"),
+    encountered_library_entry_battle: UnityPointer<3> = pdp("encounteredLibraryEntryBattle"),
     completed_library_entry_battle: UnityPointer<3> = pdp("completedLibraryEntryBattle"),
     defeated_trobbio: UnityPointer<3> = pdp("defeatedTrobbio"),
     has_harpoon_dash: UnityPointer<3> = pdp("hasHarpoonDash"),

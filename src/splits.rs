@@ -478,6 +478,10 @@ pub enum Split {
     ///
     /// Splits when killing Cogwork Dancers
     CogworkDancers,
+    /// Enter Cog_08 (Transition)
+    /// 
+    /// Splits when entering the big parkour room in cogwork core
+    EnterCog08,
     /// Second Sentinel Awoken (Event)
     ///
     /// Splits when using the Cogheart to activate Second Sentinel
@@ -1678,6 +1682,7 @@ pub fn transition_splits(
         Split::EnterCogworkDancers => should_split(
             (scenes.old == "Hang_07" || scenes.old == "Song_25") && scenes.current == "Cog_Dancers",
         ),
+        Split::EnterCog08 => should_split((scenes.old == "Cog_Dancers" && scenes.current == "Cog_08")),
         // endregion: CogworkCore
 
         // region: WhisperingVaults

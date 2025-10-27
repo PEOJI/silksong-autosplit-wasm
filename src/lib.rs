@@ -6,12 +6,10 @@ static ALLOC: dlmalloc::GlobalDlmalloc = dlmalloc::GlobalDlmalloc;
 
 mod silksong_memory;
 pub mod splits;
-mod store;
 mod timer;
+mod unstable;
 
 use alloc::{boxed::Box, format, string::String, vec::Vec};
-#[cfg(feature = "split-index")]
-use asr::watcher::Pair;
 use asr::{
     future::{next_tick, retry},
     settings::{
@@ -30,19 +28,16 @@ use ugly_widget::{
 
 use crate::{
     silksong_memory::{
-        attach_silksong, get_game_state, get_health, Env, GameManagerPointers, Memory,
-        PlayerDataPointers, SceneStore, GAME_STATE_CUTSCENE, GAME_STATE_ENTERING_LEVEL,
-        GAME_STATE_EXITING_LEVEL, GAME_STATE_INACTIVE, GAME_STATE_LOADING, GAME_STATE_MAIN_MENU,
-        GAME_STATE_PLAYING, HERO_TRANSITION_STATE_WAITING_TO_ENTER_LEVEL, MENU_TITLE,
-        NON_MENU_GAME_STATES, OPENING_SCENES, QUIT_TO_MENU, UI_STATE_CUTSCENE, UI_STATE_PAUSED,
-        UI_STATE_PLAYING,
+        attach_silksong, GameManagerPointers, Memory, PlayerDataPointers, SceneStore,
+        GAME_STATE_CUTSCENE, GAME_STATE_ENTERING_LEVEL, GAME_STATE_EXITING_LEVEL,
+        GAME_STATE_INACTIVE, GAME_STATE_LOADING, GAME_STATE_MAIN_MENU, GAME_STATE_PLAYING,
+        HERO_TRANSITION_STATE_WAITING_TO_ENTER_LEVEL, MENU_TITLE, NON_MENU_GAME_STATES,
+        OPENING_SCENES, QUIT_TO_MENU, UI_STATE_CUTSCENE, UI_STATE_PAUSED, UI_STATE_PLAYING,
     },
-    store::Store,
     timer::SplitterAction,
 };
 
 asr::async_main!(stable);
-#[cfg(target_os = "unknown")]
 asr::panic_handler!();
 
 // --------------------------------------------------------
@@ -67,14 +62,18 @@ const PLUS: &str = "+";
 // --------------------------------------------------------
 
 struct AutoSplitterState {
-    /// Store
-    store: Box<Store>,
     /// The timer state.
     timer_state: TimerState,
+    /// The last observed asr::timer::state.
+    /// Just in case asr::timer::state is a tad out-of-date.
+    last_timer_state: TimerState,
     /// The split index.
     /// None: NotRunning
     /// Some: Running, Paused, or Ended
     split_index: Option<u64>,
+    /// The last observed split index.
+    /// Just in case asr::timer::current_split_index is a tad out-of-date.
+    last_split_index: Option<u64>,
     segments_splitted: Vec<bool>,
     look_for_teleporting: bool,
     #[cfg(debug_assertions)]
@@ -98,18 +97,16 @@ struct AutoSplitterState {
 
 impl AutoSplitterState {
     fn new() -> AutoSplitterState {
-        let mut store = Box::new(Store::new());
-        let timer_state = store
-            .get_timer_state_current()
-            .unwrap_or(TimerState::Unknown);
-        let split_index = store.get_split_index_current();
+        let timer_state = asr::timer::state();
+        let split_index = unstable::timer_current_split_index();
         let mut segments_splitted = Vec::new();
         segments_splitted.resize(split_index.unwrap_or_default() as usize, false);
         let comparison_hits = Settings::get_comparison_hits().unwrap_or_default();
         AutoSplitterState {
-            store,
             timer_state,
+            last_timer_state: timer_state,
             split_index,
+            last_split_index: split_index,
             segments_splitted,
             look_for_teleporting: false,
             #[cfg(debug_assertions)]
@@ -132,20 +129,18 @@ impl AutoSplitterState {
         }
     }
 
-    fn update(&mut self, settings: &Settings, env: Option<&Env>) {
-        self.store.update_all(env);
-        let Some(state_pair) = self.store.get_timer_state_pair() else {
-            return;
-        };
-        let index_pair = self.store.get_split_index_pair();
-        if (state_pair.unchanged() && index_pair.is_none_or(|p| p.unchanged()))
-            || (state_pair.current == self.timer_state
-                && index_pair.is_none_or(|p| p.current == self.split_index))
+    fn update(&mut self, settings: &Settings) {
+        let new_state = asr::timer::state();
+        let new_index = unstable::timer_current_split_index();
+        if (new_state == self.timer_state && new_index == self.split_index)
+            || (new_state == self.last_timer_state && new_index == self.last_split_index)
         {
+            self.last_timer_state = new_state;
+            self.last_split_index = new_index;
             return;
         }
 
-        match state_pair.current {
+        match new_state {
             TimerState::NotRunning
                 if self.timer_state == TimerState::Running
                     || self.timer_state == TimerState::Paused
@@ -190,11 +185,7 @@ impl AutoSplitterState {
             }
             TimerState::Running if is_timer_state_between_runs(self.timer_state) => {
                 // Start
-                let new_index = index_pair
-                    .map(|p| p.current.unwrap_or_default())
-                    .unwrap_or_default();
-                self.split_index = Some(new_index);
-                let new_i = new_index as usize;
+                let new_i = new_index.unwrap_or_default() as usize;
                 self.segment_hits.resize(new_i + 1, 0);
                 if settings.get_hit_counter() {
                     asr::timer::set_variable_int("segment hits", self.segment_hits[new_i]);
@@ -218,20 +209,18 @@ impl AutoSplitterState {
                     || self.timer_state == TimerState::Paused =>
             {
                 // End
-                if let Some(p) = index_pair {
-                    if p.old < p.current {
-                        self.split_index = p.current
-                    } else {
-                        self.split_index = Some(p.old.unwrap_or_default() + 1)
+                #[cfg(not(feature = "split-index"))]
+                {
+                    // TODO: use last_split_index here but also other places on legacy / not-split-index
+                    self.split_index = Some(self.split_index.unwrap_or_default() + 1);
+                }
+                #[cfg(feature = "split-index")]
+                match new_index {
+                    Some(new_idx) if self.last_split_index.unwrap_or_default() < new_idx => {
+                        self.split_index = Some(new_idx)
                     }
-                } else {
-                    let old_index = self.split_index.unwrap_or_default();
-                    // splits_len = n + 1
-                    let splits_len = settings.get_splits_len() as u64;
-                    if old_index < splits_len {
-                        // old_index <= n
-                        self.split_index = Some(splits_len - 1);
-                        // split_index = n
+                    _ => {
+                        self.split_index = Some(self.last_split_index.unwrap_or_default() + 1);
                     }
                 }
                 if settings.get_hit_counter() {
@@ -247,12 +236,8 @@ impl AutoSplitterState {
             }
             _ => {
                 #[cfg(feature = "split-index")]
-                if let Some(Pair {
-                    current: Some(new_index),
-                    old: Some(old_index),
-                }) = index_pair
-                {
-                    let new_i = new_index as usize;
+                if let (Some(new_index), Some(old_index)) = (&new_index, &self.split_index) {
+                    let new_i = *new_index as usize;
                     if new_index < old_index {
                         // Undo
                         self.segment_hits[new_i] +=
@@ -269,11 +254,11 @@ impl AutoSplitterState {
                         }
                         self.segments_splitted.truncate(new_i);
                     } else if new_index > old_index {
-                        for old_idx in old_index..new_index {
+                        for old_idx in (*old_index)..(*new_index) {
                             let o_i = old_idx as usize;
                             let n_i = o_i + 1;
                             let splitted =
-                                asr::timer::segment_splitted(old_idx).unwrap_or_default();
+                                unstable::timer_segment_splitted(old_idx).unwrap_or_default();
                             self.segments_splitted.push(splitted);
                             if splitted {
                                 // Split
@@ -300,10 +285,12 @@ impl AutoSplitterState {
             }
         }
 
-        self.timer_state = state_pair.current;
+        self.timer_state = new_state;
+        self.last_timer_state = new_state;
+        self.last_split_index = new_index;
         #[cfg(feature = "split-index")]
-        if let Some(p) = index_pair {
-            self.split_index = p.current;
+        {
+            self.split_index = new_index;
         }
     }
 }
@@ -446,8 +433,9 @@ fn asr_settings_normalize(m: &asr::settings::Map) -> Option<()> {
     let new_splits = asr::settings::List::new();
     let mut changed = false;
     let this_script = this_script_name();
-    if m.get("script_name")
-        .is_none_or(|v| v.get_string().unwrap_or_default() != this_script)
+    if !m
+        .get("script_name")
+        .is_some_and(|v| v.get_string().unwrap_or_default() == this_script)
     {
         changed = true;
         m.insert("script_name", this_script);
@@ -515,7 +503,6 @@ async fn main() {
                 next_tick().await;
                 let gm = Box::new(GameManagerPointers::new());
                 let pd = Box::new(PlayerDataPointers::new());
-                let env = Env::new(&mem, &pd, &gm);
                 let _: bool = mem.deref(&gm.accepting_input).unwrap_or_default();
                 let _: Address64 = mem.deref(&gm.entry_gate_name).unwrap_or_default();
                 let _: i32 = mem.deref(&gm.game_state).unwrap_or_default();
@@ -531,12 +518,6 @@ async fn main() {
                 let _: Address64 = mem.deref(&gm.scene_name).unwrap_or_default();
                 let _: i32 = mem.deref(&gm.ui_state_vanilla).unwrap_or_default();
                 let _: i32 = mem.deref(&pd.health).unwrap_or_default();
-                state
-                    .store
-                    .get_i32_pair_bang("game_state", &get_game_state, Some(&env));
-                state
-                    .store
-                    .get_i32_pair_bang("health", &get_health, Some(&env));
                 next_tick().await;
                 asr::print_message("Initialized load removal pointers");
                 next_tick().await;
@@ -549,12 +530,12 @@ async fn main() {
                         settings.load_update_store_if_unchanged();
                         ticks_since_gui = 0;
                     }
-                    state.update(&settings, Some(&env));
+                    state.update(&settings);
 
                     // TODO: Do something on every tick.
-                    handle_splits(&settings, &mut state, &env, &mut scene_store).await;
-                    load_removal(&mut state, &env);
-                    handle_hits(&settings, &mut state, &env);
+                    handle_splits(&settings, &mut state, &mem, &gm, &pd, &mut scene_store).await;
+                    load_removal(&mut state, &mem, &gm);
+                    handle_hits(&settings, &mut state, &mem, &gm, &pd);
                     handle_percent(&mem, &gm, &pd);
                     next_tick().await;
                 }
@@ -566,7 +547,7 @@ async fn main() {
 async fn wait_attach_silksong(gui: &mut Settings, state: &mut AutoSplitterState) -> Process {
     retry(|| {
         gui.load_update_store_if_unchanged();
-        state.update(gui, None);
+        state.update(gui);
         attach_silksong()
     })
     .await
@@ -577,10 +558,12 @@ async fn wait_attach_silksong(gui: &mut Settings, state: &mut AutoSplitterState)
 async fn handle_splits(
     settings: &Settings,
     state: &mut AutoSplitterState,
-    env: &Env<'_>,
+    mem: &Memory<'_>,
+    gm: &GameManagerPointers,
+    pd: &PlayerDataPointers,
     ss: &mut SceneStore,
 ) {
-    let trans_now = ss.transition_now(env);
+    let trans_now = ss.transition_now(mem, gm);
     loop {
         match state.timer_state {
             TimerState::NotRunning => {
@@ -588,7 +571,7 @@ async fn handle_splits(
                 let Some(split) = settings.get_split(0) else {
                     break;
                 };
-                let a = splits::splits(&split, env, trans_now, ss, &mut state.store);
+                let a = splits::splits(&split, mem, gm, pd, trans_now, ss);
                 match a {
                     SplitterAction::Split => {
                         asr::timer::start();
@@ -620,7 +603,7 @@ async fn handle_splits(
                 else {
                     break;
                 };
-                let a = splits::splits(&split, env, trans_now, ss, &mut state.store);
+                let a = splits::splits(&split, mem, gm, pd, trans_now, ss);
                 match a {
                     SplitterAction::Reset => {
                         if settings.get_hit_counter() {
@@ -702,14 +685,10 @@ async fn handle_splits(
                     }
                     SplitterAction::ManualSplit => {
                         #[cfg(not(feature = "split-index"))]
-                        if let Some(old_index) = state.split_index {
+                        {
+                            let old_index = state.split_index.unwrap_or_default();
                             let old_i = old_index as usize;
                             let new_i = old_i + 1;
-                            // splits_len = number_of_segments + 1
-                            if !(new_i + 1 < settings.get_splits_len()) {
-                                break;
-                            }
-                            // new_i < number_of_segments
                             state.split_index = Some(old_index + 1);
                             state.segments_splitted.push(false);
                             state.segment_hits.insert(old_i, 0);
@@ -740,20 +719,19 @@ async fn handle_splits(
     }
 }
 
-fn load_removal(state: &mut AutoSplitterState, e: &Env) {
+fn load_removal(state: &mut AutoSplitterState, mem: &Memory, gm: &GameManagerPointers) {
     // only remove loads if timer is running
     if asr::timer::state() != TimerState::Running {
         return;
     }
 
-    let Env { mem, gm, .. } = e;
-
     let ui_state: i32 = mem.deref(&gm.ui_state_vanilla).unwrap_or_default();
     let scene_name = mem.read_string(&gm.scene_name).unwrap_or_default();
     let next_scene = mem.read_string(&gm.next_scene_name).unwrap_or_default();
 
-    let loading_menu = (scene_name == QUIT_TO_MENU)
-        || (scene_name != MENU_TITLE && (next_scene.is_empty() || next_scene == MENU_TITLE));
+    let loading_menu = (scene_name != MENU_TITLE && next_scene.is_empty())
+        || (scene_name != MENU_TITLE && next_scene == MENU_TITLE)
+        || (scene_name == QUIT_TO_MENU);
 
     // TODO: teleporting, look_for_teleporting
 
@@ -851,7 +829,13 @@ fn load_removal(state: &mut AutoSplitterState, e: &Env) {
     }
 }
 
-fn handle_hits(settings: &Settings, state: &mut AutoSplitterState, e: &Env) {
+fn handle_hits(
+    settings: &Settings,
+    state: &mut AutoSplitterState,
+    mem: &Memory,
+    gm: &GameManagerPointers,
+    pd: &PlayerDataPointers,
+) {
     // only count hits if hit counter is true
     if !settings.get_hit_counter() {
         return;
@@ -860,8 +844,6 @@ fn handle_hits(settings: &Settings, state: &mut AutoSplitterState, e: &Env) {
     if asr::timer::state() != TimerState::Running {
         return;
     }
-
-    let Env { mem, gm, pd } = e;
 
     let recoil: bool = mem.deref(&gm.hero_recoil_frozen).unwrap_or_default();
     if !state.last_recoil && recoil {

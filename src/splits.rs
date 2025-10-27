@@ -7,10 +7,10 @@ use ugly_widget::{
 
 use crate::{
     silksong_memory::{
-        get_health, is_debug_save_state_scene, is_menu, Env, SceneStore, DEATH_RESPAWN_MARKER_INIT,
-        GAME_STATE_PLAYING, MENU_TITLE, NON_MENU_GAME_STATES, OPENING_SCENES,
+        is_debug_save_state_scene, is_menu, GameManagerPointers, Memory, PlayerDataPointers,
+        SceneStore, DEATH_RESPAWN_MARKER_INIT, GAME_STATE_PLAYING, MENU_TITLE,
+        NON_MENU_GAME_STATES, OPENING_SCENES,
     },
-    store::Store,
     timer::{should_split, SplitterAction},
 };
 
@@ -482,10 +482,6 @@ pub enum Split {
     ///
     /// Splits when killing Cogwork Dancers
     CogworkDancers,
-    /// Enter Cogwork Core (Transition)
-    ///
-    /// Splits when entering the main region of Cogwork Core, above or below the Cogwork Dancers arena
-    EnterCogworkCore,
     /// Second Sentinel Awoken (Event)
     ///
     /// Splits when using the Cogheart to activate Second Sentinel
@@ -525,10 +521,6 @@ pub enum Split {
     ///
     /// Splits after giving the Courier's Rasher to Loyal Mergwin
     GivenCouriersRasher,
-    /// Great Taste Reward (Item)
-    ///
-    /// Splits when collecting the Pale Oil reward from the Great Taste of Pharloom wish
-    GreatTasteReward,
     // endregion: ChoralChambers
 
     // region: Underworks
@@ -536,10 +528,6 @@ pub enum Split {
     ///
     /// Splits when obtaining Clawline (Harpoon Dash)
     Clawline,
-    /// Post-Clawline Arena (Transition)
-    ///
-    /// Splits when exiting the Cauldron through the clawline-locked arena transition
-    PostClawlineArenaTrans,
     // endregion: Underworks
 
     // region: HighHalls
@@ -612,29 +600,13 @@ pub enum Split {
     /// Splits when entering the Putrified Ducts in a room with area text
     /// (excludes Huntress room, includes tall room)
     EnterPutrifiedDucts,
-    /// Flea Festival Begin (Event)
-    ///
-    /// Splits when starting the Flea Festival in Fleatopia
-    FleaFestivalBegin,
-    /// Flea Festival End (Event)
-    ///
-    /// Splits when the Flea Festival has ended
-    FleaFestivalEnd,
     // endregion: PutrifiedDucts
 
     // region: TheCradle
     /// Lace 2 (Boss)
     ///
-    /// Splits when defeating Lace 2 in the Cradle
+    /// Splits when defeating Lace 2 in TheCradle
     Lace2,
-    /// Post-Lace 2 Arena (Transition)
-    ///
-    /// Splits when taking the transition after Lace 2's arena into the ventrica terminus
-    PostLace2ArenaTrans,
-    /// Enter The Cradle (Transition)
-    ///
-    /// Splits when entering the full Cradle area, past the ventrica terminus
-    EnterTheCradle,
     /// Pale Nails (Skill)
     ///
     /// Splits when obtaining Pale Nails
@@ -1211,10 +1183,6 @@ pub enum Split {
     ///
     /// Splits after seeing Shakra in Sands of Karak
     SeenShakraSandsOfKarak,
-    /// Shakra Map Buyout (NPC)
-    ///
-    /// Splits after purchasing all of Shakra's maps
-    ShakraMapBuyout,
     // endregion: ShakraEncounters
 
     // region: MiscTE
@@ -1471,7 +1439,13 @@ impl StoreWidget for Split {
     }
 }
 
-pub fn menu_splits(split: &Split, scenes: &Pair<&str>, _e: &Env) -> SplitterAction {
+pub fn menu_splits(
+    split: &Split,
+    scenes: &Pair<&str>,
+    _mem: &Memory,
+    _gm: &GameManagerPointers,
+    _pd: &PlayerDataPointers,
+) -> SplitterAction {
     match split {
         // region: Start, End, and Menu
         Split::Menu => should_split(scenes.current == MENU_TITLE),
@@ -1482,8 +1456,13 @@ pub fn menu_splits(split: &Split, scenes: &Pair<&str>, _e: &Env) -> SplitterActi
     }
 }
 
-pub fn transition_splits(split: &Split, scenes: &Pair<&str>, e: &Env) -> SplitterAction {
-    let Env { mem, pd, gm } = e;
+pub fn transition_splits(
+    split: &Split,
+    scenes: &Pair<&str>,
+    mem: &Memory,
+    _gm: &GameManagerPointers,
+    pd: &PlayerDataPointers,
+) -> SplitterAction {
     match split {
         // region: Start, End, and Menu
         Split::StartNewGame => {
@@ -1697,28 +1676,11 @@ pub fn transition_splits(split: &Split, scenes: &Pair<&str>, e: &Env) -> Splitte
                 && scenes.current == "Song_Enclave",
         ),
         Split::TrobbioTrans => should_split(mem.deref(&pd.defeated_trobbio).unwrap_or_default()),
-        // endregion: ChoralChambers
-
-        // region: Underworks
-        Split::PostClawlineArenaTrans => {
-            let gate = mem.read_string(&gm.entry_gate_name).unwrap_or_default();
-            should_split(
-                gate == "bot2" && (scenes.old == "Under_18" && scenes.current == "Under_17"),
-            )
-        }
-        // endregion: Underworks
+        //endregion: ChoralChambers
 
         // region: CogworkCore
         Split::EnterCogworkDancers => should_split(
             (scenes.old == "Hang_07" || scenes.old == "Song_25") && scenes.current == "Cog_Dancers",
-        ),
-        Split::EnterCogworkCore => should_split(
-            // main transition from dancers arena to either above or below
-            (scenes.old == "Cog_Dancers"
-                && (scenes.current == "Cog_04" || scenes.current == "Cog_08"))
-				// other transitions into lower core
-                || ((scenes.old == "Cog_05" || scenes.old == "Cog_06" || scenes.old == "Cog_07")
-                    && scenes.current == "Cog_04"),
         ),
         // endregion: CogworkCore
 
@@ -1770,12 +1732,6 @@ pub fn transition_splits(split: &Split, scenes: &Pair<&str>, e: &Env) -> Splitte
         // endregion: PutrifiedDucts
 
         // region: TheCradle
-        Split::PostLace2ArenaTrans => {
-            should_split(scenes.old == "Song_Tower_01" && scenes.current == "Tube_Hub")
-        }
-        Split::EnterTheCradle => {
-            should_split(scenes.old == "Tube_Hub" && scenes.current == "Cradle_01")
-        }
         Split::PaleNailsTrans => {
             should_split(mem.deref(&pd.has_silk_boss_needle).unwrap_or_default())
         }
@@ -1869,8 +1825,13 @@ pub fn transition_splits(split: &Split, scenes: &Pair<&str>, e: &Env) -> Splitte
     }
 }
 
-pub fn transition_once_splits(split: &Split, scenes: &Pair<&str>, e: &Env) -> SplitterAction {
-    let Env { mem, gm, pd } = e;
+pub fn transition_once_splits(
+    split: &Split,
+    scenes: &Pair<&str>,
+    mem: &Memory,
+    gm: &GameManagerPointers,
+    pd: &PlayerDataPointers,
+) -> SplitterAction {
     match split {
         // region: Start, End, and Menu
         Split::Act1Start => should_split(
@@ -1890,8 +1851,7 @@ pub fn transition_once_splits(split: &Split, scenes: &Pair<&str>, e: &Env) -> Sp
     }
 }
 
-fn mask_shard_split(e: &Env, shard: i32) -> bool {
-    let Env { mem, pd, .. } = e;
+fn mask_shard_split(mem: &Memory, pd: &PlayerDataPointers, shard: i32) -> bool {
     const START_MASKS: i32 = 5;
     let current_shards = shard % 4;
     let additional_masks = shard / 4;
@@ -1903,8 +1863,7 @@ fn mask_shard_split(e: &Env, shard: i32) -> bool {
             .is_ok_and(|n: i32| n == current_shards))
 }
 
-fn spool_shard_split(e: &Env, shard: i32) -> bool {
-    let Env { mem, pd, .. } = e;
+fn spool_shard_split(mem: &Memory, pd: &PlayerDataPointers, shard: i32) -> bool {
     const START_SPOOLS: i32 = 9;
     let current_shards = shard % 2;
     let additional_spools = shard / 2;
@@ -1916,8 +1875,12 @@ fn spool_shard_split(e: &Env, shard: i32) -> bool {
             .is_ok_and(|n: i32| n == current_shards))
 }
 
-pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterAction {
-    let Env { mem, gm, pd } = e;
+pub fn continuous_splits(
+    split: &Split,
+    mem: &Memory,
+    gm: &GameManagerPointers,
+    pd: &PlayerDataPointers,
+) -> SplitterAction {
     let game_state: i32 = mem.deref(&gm.game_state).unwrap_or_default();
     if !NON_MENU_GAME_STATES.contains(&game_state) {
         return should_split(false);
@@ -1925,11 +1888,7 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
     match split {
         // region: Start, End, and Menu
         Split::ManualSplit => SplitterAction::ManualSplit,
-        Split::PlayerDeath => should_split(
-            store
-                .get_i32_pair_bang("health", &get_health, Some(e))
-                .is_some_and(|p| p.changed_to(&0)),
-        ),
+        Split::PlayerDeath => should_split(mem.deref(&pd.health).is_ok_and(|h: i32| h == 0)),
         // endregion: Start, End, and Menu
 
         // region: MossLands
@@ -2085,9 +2044,6 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         Split::GivenCouriersRasher => {
             should_split(mem.deref(&pd.gourmand_given_meat).unwrap_or_default())
         }
-        Split::GreatTasteReward => {
-            should_split(mem.deref(&pd.got_gourmand_reward).unwrap_or_default())
-        }
         Split::Trobbio => should_split(mem.deref(&pd.defeated_trobbio).unwrap_or_default()),
         //endregion: ChoralChambers
 
@@ -2119,13 +2075,6 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         }
         Split::TheUnravelled => should_split(mem.deref(&pd.ward_boss_defeated).unwrap_or_default()),
         // endregion: Whiteward
-
-        // region: PutrifiedDucts
-        Split::FleaFestivalBegin => {
-            should_split(mem.deref(&pd.flea_games_started).unwrap_or_default())
-        }
-        Split::FleaFestivalEnd => should_split(mem.deref(&pd.flea_games_ended).unwrap_or_default()),
-        // endregion: PutrifiedDucts
 
         // region: TheCradle
         Split::Lace2 => should_split(mem.deref(&pd.defeated_lace_tower).unwrap_or_default()),
@@ -2163,47 +2112,47 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         // endregion: NeedleUpgrade
 
         // region: MaskShards
-        Split::MaskShard1 => should_split(mask_shard_split(e, 1)),
-        Split::MaskShard2 => should_split(mask_shard_split(e, 2)),
-        Split::MaskShard3 => should_split(mask_shard_split(e, 3)),
-        Split::Mask1 => should_split(mask_shard_split(e, 4)),
-        Split::MaskShard5 => should_split(mask_shard_split(e, 5)),
-        Split::MaskShard6 => should_split(mask_shard_split(e, 6)),
-        Split::MaskShard7 => should_split(mask_shard_split(e, 7)),
-        Split::Mask2 => should_split(mask_shard_split(e, 8)),
-        Split::MaskShard9 => should_split(mask_shard_split(e, 9)),
-        Split::MaskShard10 => should_split(mask_shard_split(e, 10)),
-        Split::MaskShard11 => should_split(mask_shard_split(e, 11)),
-        Split::Mask3 => should_split(mask_shard_split(e, 12)),
-        Split::MaskShard13 => should_split(mask_shard_split(e, 13)),
-        Split::MaskShard14 => should_split(mask_shard_split(e, 14)),
-        Split::MaskShard15 => should_split(mask_shard_split(e, 15)),
-        Split::Mask4 => should_split(mask_shard_split(e, 16)),
-        Split::MaskShard17 => should_split(mask_shard_split(e, 17)),
-        Split::MaskShard18 => should_split(mask_shard_split(e, 18)),
-        Split::MaskShard19 => should_split(mask_shard_split(e, 19)),
-        Split::Mask5 => should_split(mask_shard_split(e, 20)),
+        Split::MaskShard1 => should_split(mask_shard_split(mem, pd, 1)),
+        Split::MaskShard2 => should_split(mask_shard_split(mem, pd, 2)),
+        Split::MaskShard3 => should_split(mask_shard_split(mem, pd, 3)),
+        Split::Mask1 => should_split(mask_shard_split(mem, pd, 4)),
+        Split::MaskShard5 => should_split(mask_shard_split(mem, pd, 5)),
+        Split::MaskShard6 => should_split(mask_shard_split(mem, pd, 6)),
+        Split::MaskShard7 => should_split(mask_shard_split(mem, pd, 7)),
+        Split::Mask2 => should_split(mask_shard_split(mem, pd, 8)),
+        Split::MaskShard9 => should_split(mask_shard_split(mem, pd, 9)),
+        Split::MaskShard10 => should_split(mask_shard_split(mem, pd, 10)),
+        Split::MaskShard11 => should_split(mask_shard_split(mem, pd, 11)),
+        Split::Mask3 => should_split(mask_shard_split(mem, pd, 12)),
+        Split::MaskShard13 => should_split(mask_shard_split(mem, pd, 13)),
+        Split::MaskShard14 => should_split(mask_shard_split(mem, pd, 14)),
+        Split::MaskShard15 => should_split(mask_shard_split(mem, pd, 15)),
+        Split::Mask4 => should_split(mask_shard_split(mem, pd, 16)),
+        Split::MaskShard17 => should_split(mask_shard_split(mem, pd, 17)),
+        Split::MaskShard18 => should_split(mask_shard_split(mem, pd, 18)),
+        Split::MaskShard19 => should_split(mask_shard_split(mem, pd, 19)),
+        Split::Mask5 => should_split(mask_shard_split(mem, pd, 20)),
         // endregion: MaskShards
 
         // region: SpoolFragments
-        Split::SpoolFragment1 => should_split(spool_shard_split(e, 1)),
-        Split::Spool1 => should_split(spool_shard_split(e, 2)),
-        Split::SpoolFragment3 => should_split(spool_shard_split(e, 3)),
-        Split::Spool2 => should_split(spool_shard_split(e, 4)),
-        Split::SpoolFragment5 => should_split(spool_shard_split(e, 5)),
-        Split::Spool3 => should_split(spool_shard_split(e, 6)),
-        Split::SpoolFragment7 => should_split(spool_shard_split(e, 7)),
-        Split::Spool4 => should_split(spool_shard_split(e, 8)),
-        Split::SpoolFragment9 => should_split(spool_shard_split(e, 9)),
-        Split::Spool5 => should_split(spool_shard_split(e, 10)),
-        Split::SpoolFragment11 => should_split(spool_shard_split(e, 11)),
-        Split::Spool6 => should_split(spool_shard_split(e, 12)),
-        Split::SpoolFragment13 => should_split(spool_shard_split(e, 13)),
-        Split::Spool7 => should_split(spool_shard_split(e, 14)),
-        Split::SpoolFragment15 => should_split(spool_shard_split(e, 15)),
-        Split::Spool8 => should_split(spool_shard_split(e, 16)),
-        Split::SpoolFragment17 => should_split(spool_shard_split(e, 17)),
-        Split::Spool9 => should_split(spool_shard_split(e, 18)),
+        Split::SpoolFragment1 => should_split(spool_shard_split(mem, pd, 1)),
+        Split::Spool1 => should_split(spool_shard_split(mem, pd, 2)),
+        Split::SpoolFragment3 => should_split(spool_shard_split(mem, pd, 3)),
+        Split::Spool2 => should_split(spool_shard_split(mem, pd, 4)),
+        Split::SpoolFragment5 => should_split(spool_shard_split(mem, pd, 5)),
+        Split::Spool3 => should_split(spool_shard_split(mem, pd, 6)),
+        Split::SpoolFragment7 => should_split(spool_shard_split(mem, pd, 7)),
+        Split::Spool4 => should_split(spool_shard_split(mem, pd, 8)),
+        Split::SpoolFragment9 => should_split(spool_shard_split(mem, pd, 9)),
+        Split::Spool5 => should_split(spool_shard_split(mem, pd, 10)),
+        Split::SpoolFragment11 => should_split(spool_shard_split(mem, pd, 11)),
+        Split::Spool6 => should_split(spool_shard_split(mem, pd, 12)),
+        Split::SpoolFragment13 => should_split(spool_shard_split(mem, pd, 13)),
+        Split::Spool7 => should_split(spool_shard_split(mem, pd, 14)),
+        Split::SpoolFragment15 => should_split(spool_shard_split(mem, pd, 15)),
+        Split::Spool8 => should_split(spool_shard_split(mem, pd, 16)),
+        Split::SpoolFragment17 => should_split(spool_shard_split(mem, pd, 17)),
+        Split::Spool9 => should_split(spool_shard_split(mem, pd, 18)),
         // endregion SpoolFragments
 
         // region: ToolPouchLevels
@@ -2463,26 +2412,6 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         Split::SeenShakraSandsOfKarak => {
             should_split(mem.deref(&pd.seen_mapper_coral_caverns).unwrap_or_default())
         }
-        Split::ShakraMapBuyout => {
-            // iterate over maps in reverse shop order to fail out as quickly as possible
-            let maps = [
-                &pd.has_swamp_map,
-                &pd.has_coral_map,
-                &pd.has_peak_map,
-                &pd.has_dustpens_map,
-                &pd.has_judge_steps_map,
-                &pd.has_shellwood_map,
-                &pd.has_bellhart_map,
-                &pd.has_greymoor_map,
-                &pd.has_hunters_nest_map,
-                &pd.has_crawl_map,
-                &pd.has_wilds_map,
-                &pd.has_docks_map,
-                &pd.has_boneforest_map,
-                &pd.has_moss_grotto_map,
-            ];
-            should_split(maps.iter().all(|map| mem.deref(map).unwrap_or_default()))
-        }
         // endregion: ShakraEncounters
 
         // region: MiscTE
@@ -2650,24 +2579,25 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
 
 pub fn splits(
     split: &Split,
-    env: &Env,
+    mem: &Memory,
+    gm: &GameManagerPointers,
+    pd: &PlayerDataPointers,
     trans_now: bool,
     ss: &mut SceneStore,
-    store: &mut Store,
 ) -> SplitterAction {
-    let a1 = continuous_splits(split, env, store).or_else(|| {
+    let a1 = continuous_splits(split, mem, gm, pd).or_else(|| {
         let scenes = ss.pair();
         let a2 = if !ss.split_this_transition {
-            transition_once_splits(split, &scenes, env)
+            transition_once_splits(split, &scenes, mem, gm, pd)
         } else {
             SplitterAction::Pass
         };
         a2.or_else(|| {
             if trans_now {
                 if is_menu(scenes.old) || is_menu(scenes.current) {
-                    menu_splits(split, &scenes, env)
+                    menu_splits(split, &scenes, mem, gm, pd)
                 } else {
-                    transition_splits(split, &scenes, env)
+                    transition_splits(split, &scenes, mem, gm, pd)
                 }
             } else {
                 SplitterAction::Pass

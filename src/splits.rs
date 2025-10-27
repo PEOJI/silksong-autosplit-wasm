@@ -679,10 +679,6 @@ pub enum Split {
     ///
     /// Splits when defeating Lace 2 in TheCradle
     Lace2,
-    /// Grandmother Silk (Boss)
-    /// 
-    /// Splits when encountering Grandmother Silk for the first time
-    GrandmotherSilkEncountered,
     /// Pale Nails (Skill)
     ///
     /// Splits when obtaining Pale Nails
@@ -694,10 +690,6 @@ pub enum Split {
     // endregion: TheCradle
 
     // region: WishSpecific
-    /// First Wish Promised
-    ///
-    /// Splits when the first wish is promised (after moss mother)
-    FirstWishPromised,
     /// New Wish Promised
     ///
     /// Splits when the wishes page updates
@@ -1016,17 +1008,6 @@ pub enum Split {
     /// Splits when leaving the room after obtaining Sylphsong
     SylphsongTrans,
     // endregion: Crests
-
-    // region: SilkHearts
-    /// Next Silk Heart (Upgrade)
-    /// 
-    /// Splits when the next silk heart is obtained
-    NextSilkHeart,
-    /// First Silk Heart (Event)
-    ///
-    /// Splits when seeing a silk heart for the first time
-    FirstSilkHeart,
-    // endregion: SilkHearts
 
     // region: FleaSpecific
     /// Rescued Flea Hunter's March (Flea)
@@ -1992,8 +1973,7 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         ),
         // endregion: Start, End, and Menu
 
-        // region: wishSpecific
-        Split::FirstWishPromised => should_split(mem.deref(&pd.promised_first_wish).unwrap_or_default()),
+        // region: WishSpecific
         Split::NewWishPromised => should_split(mem.deref(&pd.quest_pane_has_new).unwrap_or_default()),
         // endregion: WishSpecific
 
@@ -2199,7 +2179,6 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         // endregion: PutrifiedDucts
 
         // region: TheCradle
-        Split::GrandmotherSilkEncountered => should_split(mem.deref(&pd.encountered_silk).unwrap_or_default()),
         Split::EncounteredLace2 => should_split(mem.deref(&pd.encountered_lace_tower).unwrap_or_default()),
         Split::Lace2 => should_split(mem.deref(&pd.defeated_lace_tower).unwrap_or_default()),
         Split::PaleNails => should_split(mem.deref(&pd.has_silk_boss_needle).unwrap_or_default()),
@@ -2342,13 +2321,6 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
             should_split(mem.deref(&pd.has_bound_crest_upgrader).unwrap_or_default())
         }
         // endregion: Crests
-
-        // region: SilkHearts
-        Split::NextSilkHeart => should_split(mem.deref(&pd.is_next_silk_regen_upgraded).unwrap_or_default()),
-        Split::FirstSilkHeart => {
-            should_split(mem.deref(&pd.has_seen_silk_hearts).unwrap_or_default())
-        }
-        // endregion: SilkHearts
 
         // region: FleaSpecific
         Split::SavedFleaHuntersMarch => {

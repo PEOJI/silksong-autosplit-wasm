@@ -10,6 +10,7 @@ use alloc::{
 use asr::{
     future::next_tick,
     game_engine::unity::mono::{self, UnityPointer},
+    timer::TimerState,
     watcher::Pair,
     Address64, Process,
 };
@@ -376,6 +377,8 @@ declare_pointers!(PlayerDataPointers {
     unlocked_dust_cage: UnityPointer<3> = pdp("UnlockedDustCage"),
     green_prince_location: UnityPointer<3> = pdp("GreenPrinceLocation"),
     seen_fleatopia_empty: UnityPointer<3> = pdp("SeenFleatopiaEmpty"),
+    flea_games_started: UnityPointer<3> = pdp("FleaGamesStarted"),
+    flea_games_ended: UnityPointer<3> = pdp("FleaGamesEnded"),
     has_charge_slash: UnityPointer<3> = pdp("hasChargeSlash"),
     has_double_jump: UnityPointer<3> = pdp("hasDoubleJump"),
     has_super_jump: UnityPointer<3> = pdp("hasSuperJump"),
@@ -500,14 +503,29 @@ impl Memory<'_> {
             .process
             .read(a + self.string_list_offsets.string_len)
             .ok()?;
-        if !(n < 2048) {
+        if n >= 2048 {
             return None;
         }
+        // n < 2048
         let w: Vec<u16> = self
             .process
             .read_vec(a + self.string_list_offsets.string_contents, n as usize)
             .ok()?;
         String::from_utf16(&w).ok()
+    }
+}
+
+// --------------------------------------------------------
+
+pub struct Env<'a> {
+    pub mem: &'a Memory<'a>,
+    pub pd: &'a PlayerDataPointers,
+    pub gm: &'a GameManagerPointers,
+}
+
+impl<'a> Env<'a> {
+    pub fn new(mem: &'a Memory, pd: &'a PlayerDataPointers, gm: &'a GameManagerPointers) -> Self {
+        Self { mem, pd, gm }
     }
 }
 
@@ -574,7 +592,8 @@ impl SceneStore {
         }
     }
 
-    pub fn transition_now(&mut self, mem: &Memory, gm: &GameManagerPointers) -> bool {
+    pub fn transition_now(&mut self, e: &Env) -> bool {
+        let Env { mem, gm, .. } = e;
         self.new_curr_scene_name(mem.read_string(&gm.scene_name).unwrap_or_default());
         let scene_load_null: bool = mem
             .deref(&gm.scene_load)
@@ -631,3 +650,20 @@ impl Default for SceneStore {
 }
 
 // --------------------------------------------------------
+
+pub fn get_timer_state(_: Option<&Env>) -> Option<TimerState> {
+    Some(asr::timer::state())
+}
+
+#[cfg(feature = "split-index")]
+pub fn get_timer_current_split_index(_: Option<&Env>) -> Option<Option<u64>> {
+    Some(asr::timer::current_split_index())
+}
+
+pub fn get_game_state(e: Option<&Env>) -> Option<i32> {
+    e?.mem.deref(&e?.gm.game_state).ok()
+}
+
+pub fn get_health(e: Option<&Env>) -> Option<i32> {
+    e?.mem.deref(&e?.pd.health).ok()
+}

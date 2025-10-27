@@ -63,7 +63,7 @@ pub enum Split {
     // region: MossLands
     /// Moss Mother Encountered
     ///
-    /// Splits when encountering Moss Mother
+    /// Splits when encountering Moss Mother for the first time
     MossMotherEncountered,
     /// Moss Mother (Boss)
     ///
@@ -106,7 +106,7 @@ pub enum Split {
     // region: Marrow
     /// Encountered Bell Beast
     /// 
-    /// Splits when starting the Bell Beast fight for the first time
+    /// Splits when encountering Bell Beast for the first time
     BellBeastEncountered,
     /// Bell Beast (Boss)
     ///
@@ -193,10 +193,6 @@ pub enum Split {
     ///
     /// Splits when entering Far Fields
     EnterFarFields,
-    /// Met Seamstress (NPC)
-    ///
-    /// Splits when meeting the Seamstress for the Drifter's Cloak
-    MetSeamstress,
     /// Seamstress Quest
     ///
     /// Splits when Seamstress offers the Flexile Spines quest
@@ -234,7 +230,7 @@ pub enum Split {
     GreymoorBell,
     /// Encountered Moorwing (Boss)
     ///
-    /// Splits when starting Moorwing fight the first time
+    /// Splits when encountering Moorwing for the first time
     MoorwingEncountered,
     /// Moorwing (Boss)
     ///
@@ -303,7 +299,7 @@ pub enum Split {
     EnterBellhart,
     /// Widow Encountered(Boss)
     ///
-    /// Splits when starting Widow fight the first time
+    /// Splits when encountering Widow for the first time
     WidowEncountered,
     /// Widow (Boss)
     ///
@@ -1574,10 +1570,12 @@ pub fn transition_splits(split: &Split, scenes: &Pair<&str>, e: &Env) -> Splitte
         // endregion: Marrow
 
         // region: DeepDocks
-        Split::EnterDeepDocks => should_split((scenes.old == "Bone_09" && scenes.current =="Dock_08")
-         || (scenes.old == "Dock_01" && scenes.current == "Dock_08")
-         || (scenes.old == "Bone_East_03" && scenes.current =="Bone_East_01")
-         || (scenes.old == "Dock_01" && scenes.current =="Bone_East_01")),
+        Split::EnterDeepDocks => should_split(
+            (scenes.old == "Bone_09" && scenes.current == "Dock_08")
+                || (scenes.old == "Dock_01" && scenes.current == "Dock_08")
+                || (scenes.old == "Bone_East_03" && scenes.current == "Bone_East_01")
+                || (scenes.old == "Dock_01" && scenes.current == "Bone_East_01"),
+        ),
         Split::SwiftStepTrans => should_split(mem.deref(&pd.has_dash).unwrap_or_default()),
         Split::Lace1Trans => should_split(mem.deref(&pd.defeated_lace1).unwrap_or_default()),
         // endregion: DeepDocks
@@ -1594,12 +1592,12 @@ pub fn transition_splits(split: &Split, scenes: &Pair<&str>, e: &Env) -> Splitte
         // endregion: Wormways
 
         // region: HuntersMarch
-        Split::EnterAnyHuntersMarch => {
-            should_split((scenes.old == "Bone_08" && scenes.current == "Ant_02") || 
-            (scenes.old == "Bone_East_04" && scenes.current == "Ant_05b") || 
-            (scenes.old == "Bone_East_04b" && scenes.current == "Ant_05b") || 
-            (scenes.old == "Bone_East_11" && scenes.current == "Ant_05c"))
-        },
+        Split::EnterAnyHuntersMarch => should_split(
+            (scenes.old == "Bone_08" && scenes.current == "Ant_02")
+                || (scenes.old == "Bone_East_04" && scenes.current == "Ant_05b")
+                || (scenes.old == "Bone_East_04b" && scenes.current == "Ant_05b")
+                || (scenes.old == "Bone_East_11" && scenes.current == "Ant_05c"),
+        ),
         Split::EnterHuntersMarch => should_split(
             (scenes.old == "Ant_02" && scenes.current == "Ant_03")
                 || (scenes.old == "Ant_05b" && scenes.current == "Ant_14"),
@@ -1974,7 +1972,9 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         // endregion: Start, End, and Menu
 
         // region: WishSpecific
-        Split::NewWishPromised => should_split(mem.deref(&pd.quest_pane_has_new).unwrap_or_default()),
+        Split::NewWishPromised => {
+            should_split(mem.deref(&pd.quest_pane_has_new).unwrap_or_default())
+        }
         // endregion: WishSpecific
 
         // region: MossLands
@@ -1989,7 +1989,9 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         // endregion: MossLands
 
         // region: Marrow
-        Split::BellBeastEncountered => should_split(mem.deref(&pd.encountered_bell_beast).unwrap_or_default()),
+        Split::BellBeastEncountered => {
+            should_split(mem.deref(&pd.encountered_bell_beast).unwrap_or_default())
+        }
         Split::BellBeast => should_split(mem.deref(&pd.defeated_bell_beast).unwrap_or_default()),
         Split::MarrowBell => {
             should_split(mem.deref(&pd.bell_shrine_bone_forest).unwrap_or_default())
@@ -2012,7 +2014,6 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
             should_split(mem.deref(&pd.seamstress_offered_quest).unwrap_or_default())
         }
         Split::DriftersCloak => should_split(mem.deref(&pd.has_brolly).unwrap_or_default()),
-        Split::MetSeamstress => should_split(mem.deref(&pd.met_seamstress).unwrap_or_default()),
         Split::FourthChorus => should_split(mem.deref(&pd.defeated_song_golem).unwrap_or_default()),
         Split::GurrTheOutcastEncountered => {
             should_split(mem.deref(&pd.encountered_ant_trapper).unwrap_or_default())
@@ -2026,7 +2027,9 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         Split::GreymoorBell => {
             should_split(mem.deref(&pd.bell_shrine_greymoor).unwrap_or_default())
         }
-        Split::MoorwingEncountered => should_split(mem.deref(&pd.encountered_vampire_gnat_boss).unwrap_or_default()),
+        Split::MoorwingEncountered => {
+            should_split(mem.deref(&pd.encountered_vampire_gnat_boss).unwrap_or_default())
+        }
         Split::Moorwing => should_split(mem.deref(&pd.defeated_vampire_gnat_boss).unwrap_or_default()),
         Split::ThreadStorm => should_split(mem.deref(&pd.has_thread_sphere).unwrap_or_default()),
         // endregion: Greymoor
@@ -2125,7 +2128,9 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         // endregion: CogworkCore
 
         // region: WhisperingVaults
-        Split::WhisperingVaultsArenaEncountered => should_split(mem.deref(&pd.encountered_library_entry_battle).unwrap_or_default()),
+        Split::WhisperingVaultsArenaEncountered => should_split(
+            mem.deref(&pd.encountered_library_entry_battle)
+                .unwrap_or_default()),
         Split::WhisperingVaultsArena => should_split(
             mem.deref(&pd.completed_library_entry_battle)
                 .unwrap_or_default(),
@@ -2138,7 +2143,9 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         Split::GivenCouriersRasher => {
             should_split(mem.deref(&pd.gourmand_given_meat).unwrap_or_default())
         }
-        Split::TrobbioEncountered => should_split(mem.deref(&pd.encountered_trobbio).unwrap_or_default()),
+        Split::TrobbioEncountered => {
+            should_split(mem.deref(&pd.encountered_trobbio).unwrap_or_default())
+        }
         Split::Trobbio => should_split(mem.deref(&pd.defeated_trobbio).unwrap_or_default()),
         //endregion: ChoralChambers
 

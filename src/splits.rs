@@ -526,6 +526,10 @@ pub enum Split {
     /// 
     /// Splits when entering the big parkour room in cogwork core
     EnterCog08,
+    /// Enter Cogwork Core (Transition)
+    ///
+    /// Splits when entering the main region of Cogwork Core, above or below the Cogwork Dancers arena
+    EnterCogworkCore,
     /// Second Sentinel Awoken (Event)
     ///
     /// Splits when using the Cogheart to activate Second Sentinel
@@ -577,6 +581,10 @@ pub enum Split {
     ///
     /// Splits after giving the Courier's Rasher to Loyal Mergwin
     GivenCouriersRasher,
+    /// Great Taste Reward (Item)
+    ///
+    /// Splits when collecting the Pale Oil reward from the Great Taste of Pharloom wish
+    GreatTasteReward,
     // endregion: ChoralChambers
 
     // region: Underworks
@@ -584,6 +592,10 @@ pub enum Split {
     ///
     /// Splits when obtaining Clawline (Harpoon Dash)
     Clawline,
+    /// Post-Clawline Arena (Transition)
+    ///
+    /// Splits when exiting the Cauldron through the clawline-locked arena transition
+    PostClawlineArenaTrans,
     // endregion: Underworks
 
     // region: HighHalls
@@ -673,8 +685,16 @@ pub enum Split {
     EncounteredLace2,
     /// Lace 2 (Boss)
     ///
-    /// Splits when defeating Lace 2 in TheCradle
+    /// Splits when defeating Lace 2 in the Cradle
     Lace2,
+    /// Post-Lace 2 Arena (Transition)
+    ///
+    /// Splits when taking the transition after Lace 2's arena into the ventrica terminus
+    PostLace2ArenaTrans,
+    /// Enter The Cradle (Transition)
+    ///
+    /// Splits when entering the full Cradle area, past the ventrica terminus
+    EnterTheCradle,
     /// Pale Nails (Skill)
     ///
     /// Splits when obtaining Pale Nails
@@ -1258,6 +1278,10 @@ pub enum Split {
     ///
     /// Splits after seeing Shakra in Sands of Karak
     SeenShakraSandsOfKarak,
+    /// Shakra Map Buyout (NPC)
+    ///
+    /// Splits after purchasing all of Shakra's maps
+    ShakraMapBuyout,
     // endregion: ShakraEncounters
 
     // region: MiscTE
@@ -1526,7 +1550,7 @@ pub fn menu_splits(split: &Split, scenes: &Pair<&str>, _e: &Env) -> SplitterActi
 }
 
 pub fn transition_splits(split: &Split, scenes: &Pair<&str>, e: &Env) -> SplitterAction {
-    let Env { mem, pd, .. } = e;
+    let Env { mem, pd, gm } = e;
     match split {
         // region: Start, End, and Menu
         Split::StartNewGame => {
@@ -1758,13 +1782,30 @@ pub fn transition_splits(split: &Split, scenes: &Pair<&str>, e: &Env) -> Splitte
                 && scenes.current == "Song_Enclave",
         ),
         Split::TrobbioTrans => should_split(mem.deref(&pd.defeated_trobbio).unwrap_or_default()),
-        //endregion: ChoralChambers
+        // endregion: ChoralChambers
+
+        // region: Underworks
+        Split::PostClawlineArenaTrans => {
+            let gate = mem.read_string(&gm.entry_gate_name).unwrap_or_default();
+            should_split(
+                gate == "bot2" && (scenes.old == "Under_18" && scenes.current == "Under_17"),
+            )
+        }
+        // endregion: Underworks
 
         // region: CogworkCore
         Split::EnterCogworkDancers => should_split(
             (scenes.old == "Hang_07" || scenes.old == "Song_25") && scenes.current == "Cog_Dancers",
         ),
         Split::EnterCog08 => should_split(scenes.old == "Cog_Dancers" && scenes.current == "Cog_08"),
+        Split::EnterCogworkCore => should_split(
+            // main transition from dancers arena to either above or below
+            (scenes.old == "Cog_Dancers"
+                && (scenes.current == "Cog_04" || scenes.current == "Cog_08"))
+				// other transitions into lower core
+                || ((scenes.old == "Cog_05" || scenes.old == "Cog_06" || scenes.old == "Cog_07")
+                    && scenes.current == "Cog_04"),
+        ),
         // endregion: CogworkCore
 
         // region: WhisperingVaults
@@ -1815,6 +1856,12 @@ pub fn transition_splits(split: &Split, scenes: &Pair<&str>, e: &Env) -> Splitte
         // endregion: PutrifiedDucts
 
         // region: TheCradle
+        Split::PostLace2ArenaTrans => {
+            should_split(scenes.old == "Song_Tower_01" && scenes.current == "Tube_Hub")
+        }
+        Split::EnterTheCradle => {
+            should_split(scenes.old == "Tube_Hub" && scenes.current == "Cradle_01")
+        }
         Split::PaleNailsTrans => {
             should_split(mem.deref(&pd.has_silk_boss_needle).unwrap_or_default())
         }
@@ -2145,6 +2192,9 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         }
         Split::TrobbioEncountered => {
             should_split(mem.deref(&pd.encountered_trobbio).unwrap_or_default())
+        }
+        Split::GreatTasteReward => {
+            should_split(mem.deref(&pd.got_gourmand_reward).unwrap_or_default())
         }
         Split::Trobbio => should_split(mem.deref(&pd.defeated_trobbio).unwrap_or_default()),
         //endregion: ChoralChambers
@@ -2521,6 +2571,26 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         }
         Split::SeenShakraSandsOfKarak => {
             should_split(mem.deref(&pd.seen_mapper_coral_caverns).unwrap_or_default())
+        }
+        Split::ShakraMapBuyout => {
+            // iterate over maps in reverse shop order to fail out as quickly as possible
+            let maps = [
+                &pd.has_swamp_map,
+                &pd.has_coral_map,
+                &pd.has_peak_map,
+                &pd.has_dustpens_map,
+                &pd.has_judge_steps_map,
+                &pd.has_shellwood_map,
+                &pd.has_bellhart_map,
+                &pd.has_greymoor_map,
+                &pd.has_hunters_nest_map,
+                &pd.has_crawl_map,
+                &pd.has_wilds_map,
+                &pd.has_docks_map,
+                &pd.has_boneforest_map,
+                &pd.has_moss_grotto_map,
+            ];
+            should_split(maps.iter().all(|map| mem.deref(map).unwrap_or_default()))
         }
         // endregion: ShakraEncounters
 

@@ -58,6 +58,14 @@ pub enum Split {
     /// Splits when entering a transition
     /// (excludes discontinuities including save states and deaths)
     TransitionExcludingDiscontinuities,
+    /// Encounter any boss (Boss)
+    /// 
+    /// Splits when encountering any boss or fight (not including hha and gms)
+    EncounterAnyBoss,
+    /// Defeat any boss (Boss)
+    /// 
+    /// Splits when defeated any boss or fight (not including hha and gms)
+    DefeatAnyBoss,
     // endregion: Start, End, and Menu
 
     // region: MossLands
@@ -391,6 +399,10 @@ pub enum Split {
     ///
     /// Splits when entering the Exhaust Organ from Bilewater
     EnterExhaustOrgan,
+    /// PhantomEncountered (Boss)
+    /// 
+    /// Splits when encountering Phantom for the first time
+    PhantomEncountered,
     /// Phantom (Boss)
     ///
     /// Splits when killing Phantom
@@ -2018,6 +2030,26 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         ),
         // endregion: Start, End, and Menu
 
+        // region: AnyBoss
+        Split::EncounterAnyBoss => should_split(mem.deref(&pd.encountered_cogwork_dancers).unwrap_or_default()
+         || mem.deref(&pd.encountered_phantom).unwrap_or_default()
+         || mem.deref(&pd.encountered_moss_mother).unwrap_or_default()
+         || mem.deref(&pd.encountered_bell_beast).unwrap_or_default()
+         || mem.deref(&pd.encountered_library_entry_battle).unwrap_or_default()
+         || mem.deref(&pd.encountered_trobbio).unwrap_or_default()
+         || mem.deref(&pd.encountered_lace_tower).unwrap_or_default()
+         || mem.deref(&pd.spinner_encountered).unwrap_or_default()),
+
+         Split::DefeatAnyBoss => should_split(mem.deref(&pd.defeated_cogwork_dancers).unwrap_or_default()
+         || mem.deref(&pd.defeated_phantom).unwrap_or_default()
+         || mem.deref(&pd.defeated_moss_mother).unwrap_or_default()
+         || mem.deref(&pd.defeated_bell_beast).unwrap_or_default()
+         || mem.deref(&pd.completed_library_entry_battle).unwrap_or_default()
+         || mem.deref(&pd.defeated_trobbio).unwrap_or_default()
+         || mem.deref(&pd.defeated_lace_tower).unwrap_or_default()
+         || mem.deref(&pd.spinner_defeated).unwrap_or_default()),
+        // endregion: AnyBoss
+
         // region: WishSpecific
         Split::NewWishPromised => {
             should_split(mem.deref(&pd.quest_pane_has_new).unwrap_or_default())
@@ -2122,6 +2154,7 @@ pub fn continuous_splits(split: &Split, e: &Env, store: &mut Store) -> SplitterA
         // endregion: SinnersRoad
 
         // region: Bilewater
+        Split::PhantomEncountered => should_split(mem.deref(&pd.encountered_phantom).unwrap_or_default()),
         Split::Phantom => should_split(mem.deref(&pd.defeated_phantom).unwrap_or_default()),
         Split::CrossStitch => should_split(mem.deref(&pd.has_parry).unwrap_or_default()),
         // endregion: Bilewater

@@ -277,6 +277,7 @@ declare_pointers!(PlayerDataPointers {
     encountered_last_judge: UnityPointer<3> = pdp("encounteredLastJudge"),
     defeated_last_judge: UnityPointer<3> = pdp("defeatedLastJudge"),
     defeated_phantom: UnityPointer<3> = pdp("defeatedPhantom"),
+    encountered_phantom: UnityPointer<3> = pdp("encounteredPhantom"),
     act2_started: UnityPointer<3> = pdp("act2Started"),
     lace_meet_citadel: UnityPointer<3> = pdp("laceMeetCitadel"),
     encountered_cogwork_dancers: UnityPointer<3> = pdp("encounteredCogworkDancers"),
